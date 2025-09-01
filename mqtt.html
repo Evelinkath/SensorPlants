@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MQTT en Tiempo Real 🌍</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    h1 { color: #2c3e50; }
+    #mensajes {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 300px;
+      overflow-y: scroll;
+    }
+    .msg {
+      padding: 5px;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 Mensajes MQTT en Tiempo Real</h1>
+  <div id="mensajes"></div>
+
+  <script>
+    console.log("🔄 Intentando conectar al broker...");
+
+    // Conexión al broker HiveMQ vía WebSocket
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+
+    client.on("connect", () => {
+      console.log("✅ Conectado al broker MQTT");
+      client.subscribe("eve/esp32", (err) => {
+        if (!err) {
+          console.log("📡 Suscrito a eve/esp32");
+        } else {
+          console.error("❌ Error al suscribirse:", err);
+        }
+      });
+    });
+
+    client.on("error", (err) => {
+      console.error("❌ Error de conexión:", err);
+    });
+
+    client.on("message", (topic, message) => {
+      console.log(`📩 Mensaje recibido en ${topic}: ${message.toString()}`);
+      const mensajesDiv = document.getElementById("mensajes");
+      const nuevo = document.createElement("div");
+      nuevo.className = "msg";
+      nuevo.textContent = `📩 ${topic}: ${message.toString()}`;
+      mensajesDiv.appendChild(nuevo);
+      mensajesDiv.scrollTop = mensajesDiv.scrollHeight;
+    });
+  </script>
+</body>
+</html>
+
